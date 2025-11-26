@@ -135,6 +135,7 @@ public class QuerellaService {
             String qTexto,
             String estadoNombre,
             Long inspeccionId,
+            String temaNombre,
             Long comunaId,
             OffsetDateTime desde,
             OffsetDateTime hasta,
@@ -171,6 +172,7 @@ public class QuerellaService {
 
         String sqlBase = """
             FROM querella q
+            LEFT JOIN tema t ON t.id = q.tema_id
             LEFT JOIN LATERAL (
                 SELECT e.nombre AS estado_nombre
                 FROM historial_estado he
@@ -197,6 +199,11 @@ public class QuerellaService {
                 (
                     CAST(:inspeccionId AS bigint) IS NULL
                     OR q.inspeccion_id = CAST(:inspeccionId AS bigint)
+                )
+            AND
+                (
+                    CAST(:temaNombre AS text) IS NULL
+                    OR t.nombre ILIKE CONCAT('%', CAST(:temaNombre AS text), '%')
                 )
             AND
                 (
@@ -228,11 +235,13 @@ public class QuerellaService {
         Object qTextoParam       = (qTexto == null || qTexto.isBlank()) ? null : qTexto;
         Object estadoParam       = (estadoNombre == null || estadoNombre.isBlank()) ? null : estadoNombre;
         Object inspeccionParam   = inspeccionId;
+        Object temaParam         = (temaNombre == null || temaNombre.isBlank()) ? null : temaNombre;
         Object comunaParam       = comunaId;
 
         queryData.setParameter("qTexto",        qTextoParam);
         queryData.setParameter("estadoNombre",  estadoParam);
         queryData.setParameter("inspeccionId",  inspeccionParam);
+        queryData.setParameter("temaNombre",    temaParam);
         queryData.setParameter("comunaId",      comunaParam);
         queryData.setParameter("desde",         desde);
         queryData.setParameter("hasta",         hasta);
@@ -242,6 +251,7 @@ public class QuerellaService {
         queryCount.setParameter("qTexto",        qTextoParam);
         queryCount.setParameter("estadoNombre",  estadoParam);
         queryCount.setParameter("inspeccionId",  inspeccionParam);
+        queryCount.setParameter("temaNombre",    temaParam);
         queryCount.setParameter("comunaId",      comunaParam);
         queryCount.setParameter("desde",         desde);
         queryCount.setParameter("hasta",         hasta);
