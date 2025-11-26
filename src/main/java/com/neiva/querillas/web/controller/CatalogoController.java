@@ -15,6 +15,7 @@ public class CatalogoController {
     private final InspeccionRepository inspeccionRepo;
     private final ComunaRepository comunaRepo;
     private final EstadoRepository estadoRepo;
+    private final TemaRepository temaRepo;
 
     @GetMapping("/inspecciones")
     public List<ItemSimpleDTO> listarInspecciones() {
@@ -34,6 +35,13 @@ public class CatalogoController {
     public List<ItemSimpleDTO> listarEstados() {
         return estadoRepo.findByModulo("QUERELLA").stream()
                 .map(e -> new ItemSimpleDTO(e.getNombre(), e.getNombre()))
+                .toList();
+    }
+
+    @GetMapping("/temas")
+    public List<ItemSimpleDTO> listarTemas() {
+        return temaRepo.findAll().stream()
+                .map(t -> new ItemSimpleDTO(t.getId(), t.getNombre()))
                 .toList();
     }
 }
