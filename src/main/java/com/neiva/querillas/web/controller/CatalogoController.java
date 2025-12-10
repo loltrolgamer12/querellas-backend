@@ -23,6 +23,8 @@ public class CatalogoController {
     private final ComunaRepository comunaRepo;
     private final EstadoRepository estadoRepo;
     private final TemaRepository temaRepo;
+    private final BarrioRepository barrioRepo;
+    private final CorregimientoRepository corregimientoRepo;
     private final CatalogoService catalogoService;
 
     // ==================== INSPECCIONES ====================
@@ -118,6 +120,77 @@ public class CatalogoController {
     public ResponseEntity<Void> eliminarComuna(@PathVariable Long id) {
         log.info("DELETE /api/catalogos/comunas/{}", id);
         catalogoService.eliminarComuna(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    // ==================== BARRIOS ====================
+
+    @GetMapping("/barrios")
+    public List<ItemSimpleDTO> listarBarrios() {
+        return barrioRepo.findAll().stream()
+                .map(b -> new ItemSimpleDTO(b.getId(), b.getNombre()))
+                .toList();
+    }
+
+    @GetMapping("/barrios/comuna/{comunaId}")
+    public List<ItemSimpleDTO> listarBarriosPorComuna(@PathVariable Long comunaId) {
+        return barrioRepo.findByComunaId(comunaId).stream()
+                .map(b -> new ItemSimpleDTO(b.getId(), b.getNombre()))
+                .toList();
+    }
+
+    @PostMapping("/barrios")
+    public ResponseEntity<ItemSimpleDTO> crearBarrio(@Valid @RequestBody CatalogoDTO dto) {
+        log.info("POST /api/catalogos/barrios - nombre: {}", dto.getNombre());
+        ItemSimpleDTO response = catalogoService.crearBarrio(dto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
+    @PutMapping("/barrios/{id}")
+    public ResponseEntity<ItemSimpleDTO> actualizarBarrio(
+            @PathVariable Long id,
+            @Valid @RequestBody CatalogoDTO dto) {
+        log.info("PUT /api/catalogos/barrios/{}", id);
+        ItemSimpleDTO response = catalogoService.actualizarBarrio(id, dto);
+        return ResponseEntity.ok(response);
+    }
+
+    @DeleteMapping("/barrios/{id}")
+    public ResponseEntity<Void> eliminarBarrio(@PathVariable Long id) {
+        log.info("DELETE /api/catalogos/barrios/{}", id);
+        catalogoService.eliminarBarrio(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    // ==================== CORREGIMIENTOS ====================
+
+    @GetMapping("/corregimientos")
+    public List<ItemSimpleDTO> listarCorregimientos() {
+        return corregimientoRepo.findAll().stream()
+                .map(c -> new ItemSimpleDTO(c.getId(), c.getNombre()))
+                .toList();
+    }
+
+    @PostMapping("/corregimientos")
+    public ResponseEntity<ItemSimpleDTO> crearCorregimiento(@Valid @RequestBody CatalogoDTO dto) {
+        log.info("POST /api/catalogos/corregimientos - nombre: {}", dto.getNombre());
+        ItemSimpleDTO response = catalogoService.crearCorregimiento(dto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
+    @PutMapping("/corregimientos/{id}")
+    public ResponseEntity<ItemSimpleDTO> actualizarCorregimiento(
+            @PathVariable Long id,
+            @Valid @RequestBody CatalogoDTO dto) {
+        log.info("PUT /api/catalogos/corregimientos/{}", id);
+        ItemSimpleDTO response = catalogoService.actualizarCorregimiento(id, dto);
+        return ResponseEntity.ok(response);
+    }
+
+    @DeleteMapping("/corregimientos/{id}")
+    public ResponseEntity<Void> eliminarCorregimiento(@PathVariable Long id) {
+        log.info("DELETE /api/catalogos/corregimientos/{}", id);
+        catalogoService.eliminarCorregimiento(id);
         return ResponseEntity.noContent().build();
     }
 

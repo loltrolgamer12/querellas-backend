@@ -1,9 +1,13 @@
 package com.neiva.querillas.domain.service;
 
+import com.neiva.querillas.domain.entity.Barrio;
 import com.neiva.querillas.domain.entity.Comuna;
+import com.neiva.querillas.domain.entity.Corregimiento;
 import com.neiva.querillas.domain.entity.Inspeccion;
 import com.neiva.querillas.domain.entity.Tema;
+import com.neiva.querillas.domain.repo.BarrioRepository;
 import com.neiva.querillas.domain.repo.ComunaRepository;
+import com.neiva.querillas.domain.repo.CorregimientoRepository;
 import com.neiva.querillas.domain.repo.InspeccionRepository;
 import com.neiva.querillas.domain.repo.TemaRepository;
 import com.neiva.querillas.web.dto.CatalogoDTO;
@@ -23,6 +27,8 @@ public class CatalogoService {
     private final InspeccionRepository inspeccionRepository;
     private final TemaRepository temaRepository;
     private final ComunaRepository comunaRepository;
+    private final BarrioRepository barrioRepository;
+    private final CorregimientoRepository corregimientoRepository;
 
     // ==================== INSPECCIONES ====================
 
@@ -184,5 +190,130 @@ public class CatalogoService {
 
         comunaRepository.deleteById(id);
         log.info("Comuna {} eliminada", id);
+    }
+
+    // ==================== BARRIOS ====================
+
+    /**
+     * Crear barrio
+     */
+    @PreAuthorize("hasAnyRole('DIRECTORA','ADMIN')")
+    @Transactional
+    public ItemSimpleDTO crearBarrio(CatalogoDTO dto) {
+        log.info("Creando barrio - nombre: {}", dto.getNombre());
+
+        Barrio barrio = Barrio.builder()
+                .nombre(dto.getNombre())
+                .build();
+
+        // Si se proporciona comuna_id, asociar el barrio
+        if (dto.getComunaId() != null) {
+            Comuna comuna = comunaRepository.findById(dto.getComunaId())
+                    .orElseThrow(() -> new EntityNotFoundException("Comuna no encontrada con ID: " + dto.getComunaId()));
+            barrio.setComuna(comuna);
+        }
+
+        barrio = barrioRepository.save(barrio);
+        log.info("Barrio creado con ID: {}", barrio.getId());
+
+        return new ItemSimpleDTO(barrio.getId(), barrio.getNombre());
+    }
+
+    /**
+     * Actualizar barrio
+     */
+    @PreAuthorize("hasAnyRole('DIRECTORA','ADMIN')")
+    @Transactional
+    public ItemSimpleDTO actualizarBarrio(Long id, CatalogoDTO dto) {
+        log.info("Actualizando barrio ID: {}", id);
+
+        Barrio barrio = barrioRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Barrio no encontrado con ID: " + id));
+
+        barrio.setNombre(dto.getNombre());
+
+        // Actualizar comuna si se proporciona
+        if (dto.getComunaId() != null) {
+            Comuna comuna = comunaRepository.findById(dto.getComunaId())
+                    .orElseThrow(() -> new EntityNotFoundException("Comuna no encontrada con ID: " + dto.getComunaId()));
+            barrio.setComuna(comuna);
+        }
+
+        barrio = barrioRepository.save(barrio);
+
+        log.info("Barrio {} actualizado", id);
+
+        return new ItemSimpleDTO(barrio.getId(), barrio.getNombre());
+    }
+
+    /**
+     * Eliminar barrio
+     */
+    @PreAuthorize("hasAnyRole('DIRECTORA','ADMIN')")
+    @Transactional
+    public void eliminarBarrio(Long id) {
+        log.info("Eliminando barrio ID: {}", id);
+
+        if (!barrioRepository.existsById(id)) {
+            throw new EntityNotFoundException("Barrio no encontrado con ID: " + id);
+        }
+
+        barrioRepository.deleteById(id);
+        log.info("Barrio {} eliminado", id);
+    }
+
+    // ==================== CORREGIMIENTOS ====================
+
+    /**
+     * Crear corregimiento
+     */
+    @PreAuthorize("hasAnyRole('DIRECTORA','ADMIN')")
+    @Transactional
+    public ItemSimpleDTO crearCorregimiento(CatalogoDTO dto) {
+        log.info("Creando corregimiento - nombre: {}", dto.getNombre());
+
+        Corregimiento corregimiento = Corregimiento.builder()
+                .nombre(dto.getNombre())
+                .build();
+
+        corregimiento = corregimientoRepository.save(corregimiento);
+        log.info("Corregimiento creado con ID: {}", corregimiento.getId());
+
+        return new ItemSimpleDTO(corregimiento.getId(), corregimiento.getNombre());
+    }
+
+    /**
+     * Actualizar corregimiento
+     */
+    @PreAuthorize("hasAnyRole('DIRECTORA','ADMIN')")
+    @Transactional
+    public ItemSimpleDTO actualizarCorregimiento(Long id, CatalogoDTO dto) {
+        log.info("Actualizando corregimiento ID: {}", id);
+
+        Corregimiento corregimiento = corregimientoRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Corregimiento no encontrado con ID: " + id));
+
+        corregimiento.setNombre(dto.getNombre());
+        corregimiento = corregimientoRepository.save(corregimiento);
+
+        log.info("Corregimiento {} actualizado", id);
+
+        return new ItemSimpleDTO(corregimiento.getId(), corregimiento.getNombre());
+    }
+
+    /**
+     * Eliminar corregimiento
+     */
+    @PreAuthorize("hasAnyRole('DIRECTORA','ADMIN')")
+    @Transactional
+    public void eliminarCorregimiento(Long id) {
+        log.info("Eliminando corregimiento ID: {}", id);
+
+        if (!corregimientoRepository.existsById(id)) {
+            throw new EntityNotFoundException("Corregimiento no encontrado con ID: " + id);
+        }
+
+        corregimientoRepository.deleteById(id);
+        log.info("Corregimiento {} eliminado", id);
     }
 }

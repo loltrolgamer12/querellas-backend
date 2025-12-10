@@ -32,11 +32,20 @@ public class Querella {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "inspeccion_id")
+    @Deprecated // Ya no se usa, ahora se asigna por corregimiento
     private Inspeccion inspeccion;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "comuna_id")
     private Comuna comuna;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "barrio_id")
+    private Barrio barrio;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "corregimiento_id")
+    private Corregimiento corregimiento;
 
     @Column(name = "id_alcaldia", length = 50)
     private String idAlcaldia;
@@ -61,10 +70,6 @@ public class Querella {
 
     @Column(name = "querellante_contacto")
     private String querellanteContacto;
-
-
-    @Column(name = "barrio")
-    private String barrio;
 
     @Column(name = "genero_querellante", length = 20)
     private String generoQuerellante;

@@ -41,8 +41,8 @@ public class Usuario {
     private EstadoUsuario estado;
 
     @ManyToOne
-    @JoinColumn(name = "inspeccion_id")
-    private Inspeccion inspeccion; // Nullable, solo para INSPECTOR
+    @JoinColumn(name = "corregimiento_id")
+    private Corregimiento corregimiento; // Nullable, solo para INSPECTOR
 
     @Column(name = "creado_en", nullable = false)
     private OffsetDateTime creadoEn;

@@ -16,4 +16,7 @@ public class CatalogoDTO {
     @NotBlank(message = "El nombre es obligatorio")
     @Size(max = 200, message = "El nombre no puede exceder 200 caracteres")
     private String nombre;
+
+    // Opcional: Para asociar barrios a comunas
+    private Long comunaId;
 }
