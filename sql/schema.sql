@@ -1,7 +1,7 @@
 -- =====================================================
 -- ESQUEMA DE BASE DE DATOS - SISTEMA DE QUERELLAS
 -- Inspecciones de Policía - Alcaldía de Neiva
--- Versión: 1.0
+-- Versión: 2.0 - SIN INSPECCIONES, CON INSPECTORES
 -- Base de Datos: PostgreSQL 12+
 -- =====================================================
 
@@ -23,18 +23,6 @@ CREATE SEQUENCE IF NOT EXISTS seq_radicado_querella
 -- =====================================================
 -- TABLAS DE CATÁLOGOS BASE
 -- =====================================================
-
--- Tabla: inspeccion
--- Catálogo de inspecciones de policía
-CREATE TABLE inspeccion (
-    id BIGSERIAL PRIMARY KEY,
-    nombre VARCHAR(200) NOT NULL,
-    creado_en TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    actualizado_en TIMESTAMP WITH TIME ZONE
-);
-
-COMMENT ON TABLE inspeccion IS 'Catálogo de inspecciones de policía de Neiva';
-COMMENT ON COLUMN inspeccion.nombre IS 'Nombre de la inspección (ej: Inspección Primera, Segunda, etc.)';
 
 -- Tabla: tema
 -- Catálogo de temas o motivos de querellas
@@ -128,20 +116,19 @@ CREATE TABLE usuarios (
     password VARCHAR(100) NOT NULL,
     rol VARCHAR(20) NOT NULL,
     estado VARCHAR(20) NOT NULL DEFAULT 'ACTIVO',
-    inspeccion_id BIGINT,
+    zona VARCHAR(20),
     creado_en TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
     actualizado_en TIMESTAMP WITH TIME ZONE,
-    CONSTRAINT usuarios_inspeccion_fk FOREIGN KEY (inspeccion_id)
-        REFERENCES inspeccion(id) ON DELETE SET NULL,
     CONSTRAINT usuarios_rol_check CHECK (rol IN ('INSPECTOR', 'DIRECTOR', 'AUXILIAR')),
-    CONSTRAINT usuarios_estado_check CHECK (estado IN ('ACTIVO', 'BLOQUEADO', 'NO_DISPONIBLE'))
+    CONSTRAINT usuarios_estado_check CHECK (estado IN ('ACTIVO', 'BLOQUEADO', 'NO_DISPONIBLE')),
+    CONSTRAINT usuarios_zona_check CHECK (zona IN ('NEIVA', 'CORREGIMIENTO') OR zona IS NULL)
 );
 
 COMMENT ON TABLE usuarios IS 'Usuarios del sistema con diferentes roles';
 COMMENT ON COLUMN usuarios.password IS 'Contraseña hasheada con BCrypt';
 COMMENT ON COLUMN usuarios.rol IS 'INSPECTOR, DIRECTOR, o AUXILIAR';
 COMMENT ON COLUMN usuarios.estado IS 'ACTIVO, BLOQUEADO, o NO_DISPONIBLE';
-COMMENT ON COLUMN usuarios.inspeccion_id IS 'Inspección asignada (solo para INSPECTOR)';
+COMMENT ON COLUMN usuarios.zona IS 'NEIVA o CORREGIMIENTO (solo para INSPECTOR)';
 
 -- =====================================================
 -- TABLA PRINCIPAL: QUERELLA
@@ -156,7 +143,8 @@ CREATE TABLE querella (
     descripcion TEXT NOT NULL,
     tema_id BIGINT,
     naturaleza VARCHAR(20) NOT NULL,
-    inspeccion_id BIGINT,
+    inspector_asignado_id BIGINT,
+    asignado_por BIGINT,
     comuna_id BIGINT,
     id_alcaldia VARCHAR(50),
     es_migrado BOOLEAN NOT NULL DEFAULT FALSE,
@@ -177,8 +165,10 @@ CREATE TABLE querella (
     materializacion_medida BOOLEAN,
     CONSTRAINT querella_tema_fk FOREIGN KEY (tema_id)
         REFERENCES tema(id) ON DELETE SET NULL,
-    CONSTRAINT querella_inspeccion_fk FOREIGN KEY (inspeccion_id)
-        REFERENCES inspeccion(id) ON DELETE SET NULL,
+    CONSTRAINT querella_inspector_asignado_fk FOREIGN KEY (inspector_asignado_id)
+        REFERENCES usuarios(id) ON DELETE SET NULL,
+    CONSTRAINT querella_asignado_por_fk FOREIGN KEY (asignado_por)
+        REFERENCES usuarios(id) ON DELETE SET NULL,
     CONSTRAINT querella_comuna_fk FOREIGN KEY (comuna_id)
         REFERENCES comuna(id) ON DELETE SET NULL,
     CONSTRAINT querella_naturaleza_check CHECK (naturaleza IN ('OFICIO', 'PERSONA', 'ANONIMA'))
@@ -187,7 +177,9 @@ CREATE TABLE querella (
 COMMENT ON TABLE querella IS 'Registro principal de querellas ciudadanas';
 COMMENT ON COLUMN querella.radicado_interno IS 'Radicado único generado: Q-YYYY-NNNNNN';
 COMMENT ON COLUMN querella.naturaleza IS 'OFICIO, PERSONA, o ANONIMA';
-COMMENT ON COLUMN querella.id_local IS 'ID local por inspección (generado por trigger)';
+COMMENT ON COLUMN querella.inspector_asignado_id IS 'Inspector asignado a la querella';
+COMMENT ON COLUMN querella.asignado_por IS 'Usuario que asignó el inspector';
+COMMENT ON COLUMN querella.id_local IS 'ID local por inspector (generado por trigger)';
 COMMENT ON COLUMN querella.id_alcaldia IS 'ID del sistema de la alcaldía (migración)';
 COMMENT ON COLUMN querella.es_migrado IS 'TRUE si viene del sistema antiguo';
 
@@ -270,7 +262,8 @@ COMMENT ON COLUMN notificaciones.tipo IS 'ASIGNACION, CAMBIO_ESTADO, COMENTARIO,
 -- Índices en querella para búsquedas frecuentes
 CREATE INDEX idx_querella_radicado_interno ON querella(radicado_interno);
 CREATE INDEX idx_querella_id_local ON querella(id_local);
-CREATE INDEX idx_querella_inspeccion_creado ON querella(inspeccion_id, creado_en DESC);
+CREATE INDEX idx_querella_inspector_creado ON querella(inspector_asignado_id, creado_en DESC);
+CREATE INDEX idx_querella_asignado_por ON querella(asignado_por);
 CREATE INDEX idx_querella_comuna ON querella(comuna_id);
 CREATE INDEX idx_querella_tema ON querella(tema_id);
 CREATE INDEX idx_querella_creado_en ON querella(creado_en DESC);
@@ -283,7 +276,7 @@ CREATE INDEX idx_historial_estado ON historial_estado(estado_id);
 -- Índices en usuarios
 CREATE INDEX idx_usuarios_rol ON usuarios(rol);
 CREATE INDEX idx_usuarios_estado ON usuarios(estado);
-CREATE INDEX idx_usuarios_inspeccion ON usuarios(inspeccion_id);
+CREATE INDEX idx_usuarios_zona ON usuarios(zona);
 
 -- Índices en comunicaciones
 CREATE INDEX idx_comunicaciones_querella ON comunicaciones(querella_id);
@@ -303,7 +296,7 @@ CREATE INDEX idx_notificaciones_querella ON notificaciones(querella_id);
 CREATE INDEX idx_estado_transicion_modulo_desde ON estado_transicion(modulo, desde_estado_id);
 
 -- =====================================================
--- TRIGGER: Generar ID Local por Inspección
+-- TRIGGER: Generar ID Local por Inspector
 -- =====================================================
 
 -- Función para generar id_local automáticamente
@@ -313,18 +306,18 @@ DECLARE
     contador INTEGER;
     año_actual INTEGER;
 BEGIN
-    -- Solo genera si se asignó una inspección y no existe id_local
-    IF NEW.inspeccion_id IS NOT NULL AND NEW.id_local IS NULL THEN
+    -- Solo genera si se asignó un inspector y no existe id_local
+    IF NEW.inspector_asignado_id IS NOT NULL AND NEW.id_local IS NULL THEN
         año_actual := EXTRACT(YEAR FROM NEW.creado_en);
 
-        -- Contar querellas de esa inspección en el año actual
+        -- Contar querellas de ese inspector en el año actual
         SELECT COUNT(*) + 1 INTO contador
         FROM querella
-        WHERE inspeccion_id = NEW.inspeccion_id
+        WHERE inspector_asignado_id = NEW.inspector_asignado_id
           AND EXTRACT(YEAR FROM creado_en) = año_actual;
 
-        -- Formato: INS-ID-AÑO-CONTADOR (ej: 1-2025-0001)
-        NEW.id_local := NEW.inspeccion_id || '-' || año_actual || '-' || LPAD(contador::TEXT, 4, '0');
+        -- Formato: INSPECTOR-ID-AÑO-CONTADOR (ej: 5-2025-0001)
+        NEW.id_local := NEW.inspector_asignado_id || '-' || año_actual || '-' || LPAD(contador::TEXT, 4, '0');
     END IF;
 
     RETURN NEW;
@@ -337,7 +330,7 @@ CREATE TRIGGER trigger_generar_id_local
     FOR EACH ROW
     EXECUTE FUNCTION generar_id_local_querella();
 
-COMMENT ON FUNCTION generar_id_local_querella() IS 'Genera ID local único por inspección y año';
+COMMENT ON FUNCTION generar_id_local_querella() IS 'Genera ID local único por inspector y año';
 
 -- =====================================================
 -- FUNCIÓN AUXILIAR: Obtener estado actual de querella

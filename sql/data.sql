@@ -1,7 +1,7 @@
 -- =====================================================
 -- DATOS INICIALES - SISTEMA DE QUERELLAS
 -- Inspecciones de Policía - Alcaldía de Neiva
--- Versión: 1.0
+-- Versión: 2.0 - CON INSPECTORES POR ZONA
 -- =====================================================
 
 -- Configuración
@@ -10,17 +10,6 @@ SET client_encoding = 'UTF8';
 -- =====================================================
 -- 1. CATÁLOGOS BASE
 -- =====================================================
-
--- Inspecciones de Policía de Neiva
-INSERT INTO inspeccion (nombre, creado_en) VALUES
-('Inspección Primera', NOW()),
-('Inspección Segunda', NOW()),
-('Inspección Tercera', NOW()),
-('Inspección Cuarta', NOW()),
-('Inspección Quinta', NOW()),
-('Inspección Sexta', NOW()),
-('Inspección Séptima', NOW())
-ON CONFLICT DO NOTHING;
 
 -- Comunas de Neiva
 INSERT INTO comuna (nombre, creado_en) VALUES
@@ -189,7 +178,7 @@ END $$;
 -- CAMBIAR CONTRASEÑAS EN PRODUCCIÓN
 
 -- Usuario: Directora
-INSERT INTO usuarios (nombre, email, telefono, password, rol, estado, inspeccion_id, creado_en)
+INSERT INTO usuarios (nombre, email, telefono, password, rol, estado, zona, creado_en)
 VALUES (
     'María Elena Torres',
     'directora@inspecciones.neiva.gov.co',
@@ -202,7 +191,7 @@ VALUES (
 ) ON CONFLICT (email) DO NOTHING;
 
 -- Usuario: Auxiliar Administrativa
-INSERT INTO usuarios (nombre, email, telefono, password, rol, estado, inspeccion_id, creado_en)
+INSERT INTO usuarios (nombre, email, telefono, password, rol, estado, zona, creado_en)
 VALUES (
     'Carolina Ramírez García',
     'auxiliar@inspecciones.neiva.gov.co',
@@ -214,18 +203,24 @@ VALUES (
     NOW()
 ) ON CONFLICT (email) DO NOTHING;
 
--- Inspectores por Inspección
-INSERT INTO usuarios (nombre, email, telefono, password, rol, estado, inspeccion_id, creado_en)
-SELECT
-    'Inspector ' || i.nombre,
-    'inspector' || i.id || '@inspecciones.neiva.gov.co',
-    '300' || LPAD(i.id::TEXT, 7, '0'),
-    '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy',
-    'INSPECTOR',
-    'ACTIVO',
-    i.id,
-    NOW()
-FROM inspeccion i
+-- =====================================================
+-- INSPECTORES POR ZONA
+-- =====================================================
+
+-- INSPECTORES DE NEIVA (Casco Urbano)
+INSERT INTO usuarios (nombre, email, telefono, password, rol, estado, zona, creado_en) VALUES
+('Juan Carlos Pérez Gómez', 'juan.perez@inspecciones.neiva.gov.co', '3101234561', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', 'INSPECTOR', 'ACTIVO', 'NEIVA', NOW()),
+('Ana María Rodríguez López', 'ana.rodriguez@inspecciones.neiva.gov.co', '3101234562', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', 'INSPECTOR', 'ACTIVO', 'NEIVA', NOW()),
+('Carlos Alberto Martínez Silva', 'carlos.martinez@inspecciones.neiva.gov.co', '3101234563', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', 'INSPECTOR', 'ACTIVO', 'NEIVA', NOW()),
+('Patricia Lucía González Castro', 'patricia.gonzalez@inspecciones.neiva.gov.co', '3101234564', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', 'INSPECTOR', 'ACTIVO', 'NEIVA', NOW()),
+('Jorge Enrique Sánchez Rojas', 'jorge.sanchez@inspecciones.neiva.gov.co', '3101234565', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', 'INSPECTOR', 'ACTIVO', 'NEIVA', NOW())
+ON CONFLICT (email) DO NOTHING;
+
+-- INSPECTORES DE CORREGIMIENTOS
+INSERT INTO usuarios (nombre, email, telefono, password, rol, estado, zona, creado_en) VALUES
+('Luis Fernando Arias Vargas', 'luis.arias@inspecciones.neiva.gov.co', '3101234566', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', 'INSPECTOR', 'ACTIVO', 'CORREGIMIENTO', NOW()),
+('Sandra Milena Torres Parra', 'sandra.torres@inspecciones.neiva.gov.co', '3101234567', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', 'INSPECTOR', 'ACTIVO', 'CORREGIMIENTO', NOW()),
+('Diego Alejandro Morales Cruz', 'diego.morales@inspecciones.neiva.gov.co', '3101234568', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', 'INSPECTOR', 'ACTIVO', 'CORREGIMIENTO', NOW())
 ON CONFLICT (email) DO NOTHING;
 
 -- =====================================================
@@ -235,29 +230,32 @@ ON CONFLICT (email) DO NOTHING;
 -- Resumen de datos insertados
 DO $$
 DECLARE
-    count_inspecciones INTEGER;
     count_comunas INTEGER;
     count_temas INTEGER;
     count_estados INTEGER;
     count_transiciones INTEGER;
     count_usuarios INTEGER;
+    count_inspectores_neiva INTEGER;
+    count_inspectores_correg INTEGER;
 BEGIN
-    SELECT COUNT(*) INTO count_inspecciones FROM inspeccion;
     SELECT COUNT(*) INTO count_comunas FROM comuna;
     SELECT COUNT(*) INTO count_temas FROM tema;
     SELECT COUNT(*) INTO count_estados FROM estado WHERE modulo='QUERELLA';
     SELECT COUNT(*) INTO count_transiciones FROM estado_transicion WHERE modulo='QUERELLA';
     SELECT COUNT(*) INTO count_usuarios FROM usuarios;
+    SELECT COUNT(*) INTO count_inspectores_neiva FROM usuarios WHERE rol='INSPECTOR' AND zona='NEIVA';
+    SELECT COUNT(*) INTO count_inspectores_correg FROM usuarios WHERE rol='INSPECTOR' AND zona='CORREGIMIENTO';
 
     RAISE NOTICE '========================================';
     RAISE NOTICE 'DATOS INICIALES CARGADOS EXITOSAMENTE';
     RAISE NOTICE '========================================';
-    RAISE NOTICE 'Inspecciones: %', count_inspecciones;
     RAISE NOTICE 'Comunas: %', count_comunas;
     RAISE NOTICE 'Temas: %', count_temas;
     RAISE NOTICE 'Estados: %', count_estados;
     RAISE NOTICE 'Transiciones: %', count_transiciones;
-    RAISE NOTICE 'Usuarios: %', count_usuarios;
+    RAISE NOTICE 'Total Usuarios: %', count_usuarios;
+    RAISE NOTICE 'Inspectores (Neiva): %', count_inspectores_neiva;
+    RAISE NOTICE 'Inspectores (Corregimientos): %', count_inspectores_correg;
     RAISE NOTICE '========================================';
     RAISE NOTICE 'Credenciales de acceso:';
     RAISE NOTICE 'Usuario: directora@inspecciones.neiva.gov.co';
