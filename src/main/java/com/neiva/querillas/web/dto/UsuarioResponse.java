@@ -2,6 +2,7 @@ package com.neiva.querillas.web.dto;
 
 import com.neiva.querillas.domain.model.EstadoUsuario;
 import com.neiva.querillas.domain.model.RolUsuario;
+import com.neiva.querillas.domain.model.ZonaInspector;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -21,8 +22,7 @@ public class UsuarioResponse {
     private String telefono;
     private RolUsuario rol;
     private EstadoUsuario estado;
-    private Long inspeccionId;
-    private String inspeccionNombre;
+    private ZonaInspector zona;  // NEIVA o CORREGIMIENTO (solo para INSPECTOR)
     private OffsetDateTime creadoEn;
     private OffsetDateTime actualizadoEn;
 }

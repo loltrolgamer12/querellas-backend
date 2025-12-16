@@ -22,9 +22,14 @@ public class QuerellaResponse {
     private Long temaId;
     private String temaNombre;
 
-    // Inspección
-    private Long inspeccionId;
-    private String inspeccionNombre;
+    // Inspector Asignado
+    private Long inspectorAsignadoId;
+    private String inspectorAsignadoNombre;
+    private String inspectorAsignadoZona;  // NEIVA o CORREGIMIENTO
+
+    // Usuario que asignó
+    private Long asignadoPorId;
+    private String asignadoPorNombre;
 
     // Comuna
     private Long comunaId;
