@@ -31,8 +31,8 @@ public class Querella {
     private Naturaleza naturaleza;   // ← enum
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "inspeccion_id")
-    private Inspeccion inspeccion;
+    @JoinColumn(name = "inspector_asignado_id")
+    private Usuario inspectorAsignado;  // Inspector asignado a la querella
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "comuna_id")
@@ -46,6 +46,10 @@ public class Querella {
 
     @Column(name = "creado_por")
     private Long creadoPor;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "asignado_por")
+    private Usuario asignadoPor;  // Usuario que asignó el inspector
 
     @Column(name = "creado_en", nullable = false, columnDefinition = "TIMESTAMP WITH TIME ZONE")
     private OffsetDateTime creadoEn;

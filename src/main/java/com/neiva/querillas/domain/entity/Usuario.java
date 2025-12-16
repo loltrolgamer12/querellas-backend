@@ -2,6 +2,7 @@ package com.neiva.querillas.domain.entity;
 
 import com.neiva.querillas.domain.model.EstadoUsuario;
 import com.neiva.querillas.domain.model.RolUsuario;
+import com.neiva.querillas.domain.model.ZonaInspector;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -40,9 +41,9 @@ public class Usuario {
     @Column(nullable = false, length = 20)
     private EstadoUsuario estado;
 
-    @ManyToOne
-    @JoinColumn(name = "inspeccion_id")
-    private Inspeccion inspeccion; // Nullable, solo para INSPECTOR
+    @Enumerated(EnumType.STRING)
+    @Column(length = 20)
+    private ZonaInspector zona; // NEIVA o CORREGIMIENTO (solo para INSPECTOR)
 
     @Column(name = "creado_en", nullable = false)
     private OffsetDateTime creadoEn;
