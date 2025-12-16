@@ -15,7 +15,7 @@ public class QuerellaReporteDTO {
 
     private Long id;
     private OffsetDateTime fechaRadicado;   // q.creadoEn
-    private String inspeccionNombre;
+    private String inspectorNombre;
     private String radicadoInterno;
     private String temaNombre;
     private String generoQuerellante;

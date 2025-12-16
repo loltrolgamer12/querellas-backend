@@ -19,43 +19,10 @@ import java.util.List;
 @Slf4j
 public class CatalogoController {
 
-    private final InspeccionRepository inspeccionRepo;
     private final ComunaRepository comunaRepo;
     private final EstadoRepository estadoRepo;
     private final TemaRepository temaRepo;
     private final CatalogoService catalogoService;
-
-    // ==================== INSPECCIONES ====================
-
-    @GetMapping("/inspecciones")
-    public List<ItemSimpleDTO> listarInspecciones() {
-        return inspeccionRepo.findAll().stream()
-                .map(i -> new ItemSimpleDTO(i.getId(), i.getNombre()))
-                .toList();
-    }
-
-    @PostMapping("/inspecciones")
-    public ResponseEntity<ItemSimpleDTO> crearInspeccion(@Valid @RequestBody CatalogoDTO dto) {
-        log.info("POST /api/catalogos/inspecciones - nombre: {}", dto.getNombre());
-        ItemSimpleDTO response = catalogoService.crearInspeccion(dto);
-        return ResponseEntity.status(HttpStatus.CREATED).body(response);
-    }
-
-    @PutMapping("/inspecciones/{id}")
-    public ResponseEntity<ItemSimpleDTO> actualizarInspeccion(
-            @PathVariable Long id,
-            @Valid @RequestBody CatalogoDTO dto) {
-        log.info("PUT /api/catalogos/inspecciones/{}", id);
-        ItemSimpleDTO response = catalogoService.actualizarInspeccion(id, dto);
-        return ResponseEntity.ok(response);
-    }
-
-    @DeleteMapping("/inspecciones/{id}")
-    public ResponseEntity<Void> eliminarInspeccion(@PathVariable Long id) {
-        log.info("DELETE /api/catalogos/inspecciones/{}", id);
-        catalogoService.eliminarInspeccion(id);
-        return ResponseEntity.noContent().build();
-    }
 
     // ==================== TEMAS ====================
 

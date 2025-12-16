@@ -1,6 +1,7 @@
 package com.neiva.querillas.web.dto;
 
 import com.neiva.querillas.domain.model.RolUsuario;
+import com.neiva.querillas.domain.model.ZonaInspector;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -31,7 +32,7 @@ public class UsuarioCreateDTO {
     @NotNull(message = "El rol es obligatorio")
     private RolUsuario rol;
 
-    private Long inspeccionId; // Opcional, solo si rol = INSPECTOR
+    private ZonaInspector zona; // Opcional, solo si rol = INSPECTOR (NEIVA o CORREGIMIENTO)
 
     @NotBlank(message = "La contraseña es obligatoria")
     @Size(min = 6, max = 100, message = "La contraseña debe tener entre 6 y 100 caracteres")

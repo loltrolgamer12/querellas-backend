@@ -20,9 +20,10 @@ public class QuerellaCreateDTO {
     @NotNull(message = "La naturaleza es obligatoria")
     private Naturaleza naturaleza;   // ← enum fuerte
 
-    private Long temaId;        // opcional
-    private Long comunaId;      // opcional
-    private Long inspeccionId;  // opcional
+    private Long temaId;              // opcional
+    private Long comunaId;            // opcional
+    private Long inspectorAsignadoId; // opcional
+    private Long asignadoPorId;       // opcional - usuario que asigna
 
 
     

@@ -1,10 +1,8 @@
 package com.neiva.querillas.domain.service;
 
-import com.neiva.querillas.domain.entity.Inspeccion;
 import com.neiva.querillas.domain.entity.Usuario;
 import com.neiva.querillas.domain.model.EstadoUsuario;
 import com.neiva.querillas.domain.model.RolUsuario;
-import com.neiva.querillas.domain.repo.InspeccionRepository;
 import com.neiva.querillas.domain.repo.UsuarioRepository;
 import com.neiva.querillas.web.dto.*;
 import jakarta.persistence.EntityNotFoundException;
@@ -25,7 +23,6 @@ import org.springframework.transaction.annotation.Transactional;
 public class UsuarioService {
 
     private final UsuarioRepository usuarioRepository;
-    private final InspeccionRepository inspeccionRepository;
     private final PasswordEncoder passwordEncoder;
 
     /**
@@ -76,14 +73,11 @@ public class UsuarioService {
             throw new IllegalArgumentException("Ya existe un usuario con el email: " + dto.getEmail());
         }
 
-        // Validar que si el rol es INSPECTOR, debe tener inspección asignada
-        Inspeccion inspeccion = null;
+        // Validar que si el rol es INSPECTOR, debe tener zona asignada
         if (dto.getRol() == RolUsuario.INSPECTOR) {
-            if (dto.getInspeccionId() == null) {
-                throw new IllegalArgumentException("Los usuarios con rol INSPECTOR deben tener una inspección asignada");
+            if (dto.getZona() == null) {
+                throw new IllegalArgumentException("Los usuarios con rol INSPECTOR deben tener una zona asignada (NEIVA o CORREGIMIENTO)");
             }
-            inspeccion = inspeccionRepository.findById(dto.getInspeccionId())
-                    .orElseThrow(() -> new EntityNotFoundException("Inspección no encontrada con ID: " + dto.getInspeccionId()));
         }
 
         // Hashear la contraseña
@@ -97,7 +91,7 @@ public class UsuarioService {
                 .password(passwordHasheado)
                 .rol(dto.getRol())
                 .estado(EstadoUsuario.ACTIVO)
-                .inspeccion(inspeccion)
+                .zona(dto.getZona())
                 .build();
 
         usuario = usuarioRepository.save(usuario);
@@ -124,14 +118,11 @@ public class UsuarioService {
             }
         }
 
-        // Validar que si el rol es INSPECTOR, debe tener inspección asignada
-        Inspeccion inspeccion = null;
+        // Validar que si el rol es INSPECTOR, debe tener zona asignada
         if (dto.getRol() == RolUsuario.INSPECTOR) {
-            if (dto.getInspeccionId() == null) {
-                throw new IllegalArgumentException("Los usuarios con rol INSPECTOR deben tener una inspección asignada");
+            if (dto.getZona() == null) {
+                throw new IllegalArgumentException("Los usuarios con rol INSPECTOR deben tener una zona asignada (NEIVA o CORREGIMIENTO)");
             }
-            inspeccion = inspeccionRepository.findById(dto.getInspeccionId())
-                    .orElseThrow(() -> new EntityNotFoundException("Inspección no encontrada con ID: " + dto.getInspeccionId()));
         }
 
         // Actualizar campos
@@ -140,7 +131,7 @@ public class UsuarioService {
         usuario.setTelefono(dto.getTelefono());
         usuario.setRol(dto.getRol());
         usuario.setEstado(dto.getEstado());
-        usuario.setInspeccion(inspeccion);
+        usuario.setZona(dto.getZona());
 
         usuario = usuarioRepository.save(usuario);
         log.info("Usuario actualizado: {}", usuario.getId());
@@ -195,8 +186,7 @@ public class UsuarioService {
                 .telefono(usuario.getTelefono())
                 .rol(usuario.getRol())
                 .estado(usuario.getEstado())
-                .inspeccionId(usuario.getInspeccion() != null ? usuario.getInspeccion().getId() : null)
-                .inspeccionNombre(usuario.getInspeccion() != null ? usuario.getInspeccion().getNombre() : null)
+                .zona(usuario.getZona())
                 .creadoEn(usuario.getCreadoEn())
                 .actualizadoEn(usuario.getActualizadoEn())
                 .build();
