@@ -176,6 +176,28 @@ public class UsuarioService {
     }
 
     /**
+     * Listar solo inspectores activos (sin paginación, para dropdowns)
+     */
+    @PreAuthorize("hasAnyRole('DIRECTORA','AUXILIAR','INSPECTOR')")
+    @Transactional(readOnly = true)
+    public java.util.List<UsuarioResponse> listarInspectores(com.neiva.querillas.domain.model.ZonaInspector zona) {
+        log.info("Listando inspectores - zona: {}", zona);
+
+        java.util.List<Usuario> inspectores;
+        if (zona != null) {
+            inspectores = usuarioRepository.findByRolAndZonaAndEstado(
+                    RolUsuario.INSPECTOR, zona, EstadoUsuario.ACTIVO);
+        } else {
+            inspectores = usuarioRepository.findByRolAndEstado(
+                    RolUsuario.INSPECTOR, EstadoUsuario.ACTIVO);
+        }
+
+        return inspectores.stream()
+                .map(this::convertirAResponse)
+                .toList();
+    }
+
+    /**
      * Convertir entidad Usuario a DTO de respuesta
      */
     private UsuarioResponse convertirAResponse(Usuario usuario) {
