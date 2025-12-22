@@ -1,12 +1,8 @@
 package com.neiva.querillas.web.controller;
 
+import com.neiva.querillas.domain.service.AsignacionAutomaticaService;
 import com.neiva.querillas.domain.service.QuerellaService;
-import com.neiva.querillas.web.dto.AsignarInspectorDTO;
-import com.neiva.querillas.web.dto.CambioEstadoDTO;
-import com.neiva.querillas.web.dto.HistorialEstadoDTO;
-import com.neiva.querillas.web.dto.PaginaQuerellaResponse;
-import com.neiva.querillas.web.dto.QuerellaCreateDTO;
-import com.neiva.querillas.web.dto.QuerellaResponse;
+import com.neiva.querillas.web.dto.*;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -22,6 +18,7 @@ import java.util.List;
 public class QuerellaController {
 
     private final QuerellaService service;
+    private final AsignacionAutomaticaService asignacionAutomaticaService;
 
     // 1. Crear querella
     @PostMapping
@@ -97,6 +94,14 @@ public class QuerellaController {
     @PreAuthorize("hasAnyRole('DIRECTORA','AUXILIAR','INSPECTOR')")
     public ResponseEntity<List<QuerellaResponse>> posiblesDuplicados(@PathVariable Long id) {
         return ResponseEntity.ok(service.posiblesDuplicados(id));
+    }
+
+    // 8. Asignación automática de querellas (Round-Robin)
+    @PostMapping("/asignar-automatico")
+    @PreAuthorize("hasRole('DIRECTORA')")
+    public ResponseEntity<AsignacionAutomaticaResponse> asignarAutomatico(
+            @Valid @RequestBody AsignacionAutomaticaRequest request) {
+        return ResponseEntity.ok(asignacionAutomaticaService.asignarAutomaticamente(request));
     }
 
 }

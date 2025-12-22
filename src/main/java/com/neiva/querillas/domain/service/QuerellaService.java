@@ -304,6 +304,32 @@ public class QuerellaService {
         return toResponse(q);
     }
 
+    /**
+     * Método interno para asignar inspector (sin validación de seguridad)
+     * Usado por el servicio de asignación automática
+     */
+    @Transactional
+    public QuerellaResponse asignarInspectorInterno(Long querellaId, Long inspectorId, Long asignadoPorId) {
+
+        Querella q = querellaRepo.findById(querellaId)
+                .orElseThrow(() -> new EntityNotFoundException("Querella no encontrada con ID: " + querellaId));
+
+        Usuario inspector = usuarioRepo.findById(inspectorId)
+                .orElseThrow(() -> new EntityNotFoundException("Inspector no encontrado con ID: " + inspectorId));
+
+        Usuario asignadoPor = null;
+        if (asignadoPorId != null) {
+            asignadoPor = usuarioRepo.findById(asignadoPorId).orElse(null);
+        }
+
+        q.setInspectorAsignado(inspector);
+        q.setAsignadoPor(asignadoPor);
+        q.setActualizadoEn(OffsetDateTime.now());
+        q = querellaRepo.save(q);
+
+        return toResponse(q);
+    }
+
     // ======================
     // CAMBIAR ESTADO
     // ======================
