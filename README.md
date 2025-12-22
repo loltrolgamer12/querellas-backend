@@ -29,13 +29,28 @@ Cambia TU-USUARIO por tu usuario real de GitHub.
 -----
 **3. Configuración de base de datos**
 
-1. Crear una base de datos en PostgreSQL (nombre sugerido):
+**📁 Scripts SQL disponibles en el directorio `/sql/`**
 
-CREATE DATABASE querillas\_db;
+**Opción A - Instalación Automatizada (Recomendado):**
+```bash
+cd sql
+./install_all.sh
+```
 
-2. Restaurar el **dump/.sql** o ejecutar los scripts SQL que se entregaron con el proyecto\
-   (estructura de tablas, catálogos, usuarios, etc.).
-2. Configurar las credenciales en src/main/resources/application.properties\
+**Opción B - Instalación Manual:**
+```bash
+# 1. Crear base de datos
+createdb querillas_db
+
+# 2. Ejecutar scripts (desde el directorio /sql/)
+psql -d querillas_db -f schema.sql
+psql -d querillas_db -f data.sql
+psql -d querillas_db -f verify_installation.sql
+```
+
+📖 **Ver guía completa:** `sql/README_DATABASE.md`
+
+1. Configurar las credenciales en src/main/resources/application.properties\
    Ejemplo usando application.properties:
 
 spring.application.name=querillas

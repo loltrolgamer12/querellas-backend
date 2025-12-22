@@ -14,8 +14,8 @@ public class DashboardQuerellasResumen {
     // clave = nombre estado actual (RECIBIDA, VERIFICACION, CERRADA, etc.)
     private Map<String, Long> porEstado;
 
-    // clave = nombre inspección
-    private Map<String, Long> porInspeccion;
+    // clave = nombre inspector
+    private Map<String, Long> porInspector;
 
     // clave = naturaleza (OFICIO, PERSONA, ANONIMA)
     private Map<String, Long> porNaturaleza;

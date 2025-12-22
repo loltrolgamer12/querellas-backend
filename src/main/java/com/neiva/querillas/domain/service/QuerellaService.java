@@ -28,7 +28,7 @@ public class QuerellaService {
     private final QuerellaRepository querellaRepo;
     private final EstadoRepository estadoRepo;
     private final HistorialEstadoRepository historialRepo;
-    private final InspeccionRepository inspeccionRepo;
+    private final UsuarioRepository usuarioRepo;
     private final TemaRepository temaRepo;
     private final ComunaRepository comunaRepo;
 
@@ -63,10 +63,10 @@ public class QuerellaService {
                     .orElseThrow(() -> new EntityNotFoundException("Comuna no existe"));
         }
 
-        Inspeccion insp = null;
-        if (dto.getInspeccionId() != null) {
-            insp = inspeccionRepo.findById(dto.getInspeccionId())
-                    .orElseThrow(() -> new EntityNotFoundException("Inspeccion no existe"));
+        Usuario inspector = null;
+        if (dto.getInspectorAsignadoId() != null) {
+            inspector = usuarioRepo.findById(dto.getInspectorAsignadoId())
+                    .orElseThrow(() -> new EntityNotFoundException("Inspector no existe"));
         }
 
         Estado estadoInicial = estadoRepo
@@ -79,7 +79,9 @@ public class QuerellaService {
                 .descripcion(dto.getDescripcion())
                 .tema(tema)
                 .naturaleza(nat)
-                .inspeccion(insp)
+                .inspectorAsignado(inspector)
+                .asignadoPor(dto.getAsignadoPorId() != null ?
+                    usuarioRepo.findById(dto.getAsignadoPorId()).orElse(null) : null)
                 .comuna(comuna)
                 .idAlcaldia(null)
                 .esMigrado(false)
@@ -134,7 +136,7 @@ public class QuerellaService {
     public PaginaQuerellaResponse listarBandeja(
             String qTexto,
             String estadoNombre,
-            Long inspeccionId,
+            Long inspectorId,
             String temaNombre,
             Long comunaId,
             OffsetDateTime desde,
@@ -197,8 +199,8 @@ public class QuerellaService {
                 )
             AND
                 (
-                    CAST(:inspeccionId AS bigint) IS NULL
-                    OR q.inspeccion_id = CAST(:inspeccionId AS bigint)
+                    CAST(:inspectorId AS bigint) IS NULL
+                    OR q.inspector_asignado_id = CAST(:inspectorId AS bigint)
                 )
             AND
                 (
@@ -234,13 +236,13 @@ public class QuerellaService {
 
         Object qTextoParam       = (qTexto == null || qTexto.isBlank()) ? null : qTexto;
         Object estadoParam       = (estadoNombre == null || estadoNombre.isBlank()) ? null : estadoNombre;
-        Object inspeccionParam   = inspeccionId;
+        Object inspectorParam    = inspectorId;
         Object temaParam         = (temaNombre == null || temaNombre.isBlank()) ? null : temaNombre;
         Object comunaParam       = comunaId;
 
         queryData.setParameter("qTexto",        qTextoParam);
         queryData.setParameter("estadoNombre",  estadoParam);
-        queryData.setParameter("inspeccionId",  inspeccionParam);
+        queryData.setParameter("inspectorId",   inspectorParam);
         queryData.setParameter("temaNombre",    temaParam);
         queryData.setParameter("comunaId",      comunaParam);
         queryData.setParameter("desde",         desde);
@@ -250,7 +252,7 @@ public class QuerellaService {
 
         queryCount.setParameter("qTexto",        qTextoParam);
         queryCount.setParameter("estadoNombre",  estadoParam);
-        queryCount.setParameter("inspeccionId",  inspeccionParam);
+        queryCount.setParameter("inspectorId",   inspectorParam);
         queryCount.setParameter("temaNombre",    temaParam);
         queryCount.setParameter("comunaId",      comunaParam);
         queryCount.setParameter("desde",         desde);
@@ -277,19 +279,25 @@ public class QuerellaService {
     }
 
     // ======================
-    // ASIGNAR / REASIGNAR INSPECCION
+    // ASIGNAR / REASIGNAR INSPECTOR
     // ======================
     @Transactional
     @PreAuthorize("hasAnyRole('DIRECTORA','INSPECTOR')")
-    public QuerellaResponse asignarInspeccion(Long id, AsignarInspeccionDTO dto) {
+    public QuerellaResponse asignarInspector(Long id, AsignarInspectorDTO dto, Long asignadoPorId) {
 
         Querella q = querellaRepo.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Querella no encontrada"));
 
-        Inspeccion ins = inspeccionRepo.findById(dto.getInspeccionId())
-                .orElseThrow(() -> new EntityNotFoundException("Inspección no encontrada"));
+        Usuario inspector = usuarioRepo.findById(dto.getInspectorId())
+                .orElseThrow(() -> new EntityNotFoundException("Inspector no encontrado"));
 
-        q.setInspeccion(ins);
+        Usuario asignadoPor = null;
+        if (asignadoPorId != null) {
+            asignadoPor = usuarioRepo.findById(asignadoPorId).orElse(null);
+        }
+
+        q.setInspectorAsignado(inspector);
+        q.setAsignadoPor(asignadoPor);
         q.setActualizadoEn(OffsetDateTime.now());
         q = querellaRepo.save(q);
 
@@ -393,7 +401,7 @@ public class QuerellaService {
     public List<QuerellaReporteDTO> generarReporteTrimestral(
             LocalDate desde,
             LocalDate hasta,
-            Long inspeccionId
+            Long inspectorId
     ) {
         OffsetDateTime desdeDateTime = desde.atStartOfDay().atOffset(ZoneOffset.UTC);
         OffsetDateTime hastaDateTime = hasta.plusDays(1).atStartOfDay().atOffset(ZoneOffset.UTC);
@@ -401,18 +409,18 @@ public class QuerellaService {
         String jpql = """
             SELECT q
             FROM Querella q
-            LEFT JOIN FETCH q.inspeccion i
+            LEFT JOIN FETCH q.inspectorAsignado i
             LEFT JOIN FETCH q.tema t
             LEFT JOIN FETCH q.comuna c
             WHERE q.creadoEn >= :desde
               AND q.creadoEn < :hasta
-              AND (:inspeccionId IS NULL OR q.inspeccion.id = :inspeccionId)
+              AND (:inspectorId IS NULL OR q.inspectorAsignado.id = :inspectorId)
             """;
 
         var query = entityManager.createQuery(jpql, Querella.class);
         query.setParameter("desde", desdeDateTime);
         query.setParameter("hasta", hastaDateTime);
-        query.setParameter("inspeccionId", inspeccionId);
+        query.setParameter("inspectorId", inspectorId);
 
         List<Querella> resultado = query.getResultList();
 
@@ -420,7 +428,7 @@ public class QuerellaService {
                 .map(q -> QuerellaReporteDTO.builder()
                         .id(q.getId())
                         .fechaRadicado(q.getCreadoEn())
-                        .inspeccionNombre(q.getInspeccion() == null ? null : q.getInspeccion().getNombre())
+                        .inspectorNombre(q.getInspectorAsignado() == null ? null : q.getInspectorAsignado().getNombre())
                         .radicadoInterno(q.getRadicadoInterno())
                         .temaNombre(q.getTema() == null ? null : q.getTema().getNombre())
                         .generoQuerellante(q.getGeneroQuerellante())
@@ -495,26 +503,26 @@ public class QuerellaService {
             porEstado.put(nombreEstado == null ? "SIN_ESTADO" : nombreEstado, count.longValue());
         }
 
-        // ---------- 3) Conteo por inspección ----------
-        String sqlPorInspeccion = """
-            SELECT i.nombre, COUNT(*)
+        // ---------- 3) Conteo por inspector ----------
+        String sqlPorInspector = """
+            SELECT u.nombre, COUNT(*)
             FROM querella q
-                 JOIN inspeccion i ON i.id = q.inspeccion_id
+                 JOIN usuarios u ON u.id = q.inspector_asignado_id
         """ + filtroFechas +
-                " GROUP BY i.nombre";
+                " GROUP BY u.nombre";
 
         @SuppressWarnings("unchecked")
-        var rowsInspeccion = entityManager.createNativeQuery(sqlPorInspeccion)
+        var rowsInspector = entityManager.createNativeQuery(sqlPorInspector)
                 .setParameter("desde", desde)
                 .setParameter("hasta", hasta)
                 .getResultList();
 
-        Map<String, Long> porInspeccion = new HashMap<>();
-        for (Object rowObj : rowsInspeccion) {
+        Map<String, Long> porInspector = new HashMap<>();
+        for (Object rowObj : rowsInspector) {
             Object[] row = (Object[]) rowObj;
             String nombreInsp = (String) row[0];
             Number count = (Number) row[1];
-            porInspeccion.put(nombreInsp, count.longValue());
+            porInspector.put(nombreInsp, count.longValue());
         }
 
         // ---------- 4) Conteo por naturaleza ----------
@@ -541,7 +549,7 @@ public class QuerellaService {
         return DashboardQuerellasResumen.builder()
                 .totalQuerellas(totalQuerellas)
                 .porEstado(porEstado)
-                .porInspeccion(porInspeccion)
+                .porInspector(porInspector)
                 .porNaturaleza(porNaturaleza)
                 .build();
     }
@@ -624,8 +632,12 @@ public class QuerellaService {
                 .naturaleza(q.getNaturaleza() == null ? null : q.getNaturaleza().name())
                 .temaId(q.getTema() == null ? null : q.getTema().getId())
                 .temaNombre(q.getTema() == null ? null : q.getTema().getNombre())
-                .inspeccionId(q.getInspeccion() == null ? null : q.getInspeccion().getId())
-                .inspeccionNombre(q.getInspeccion() == null ? null : q.getInspeccion().getNombre())
+                .inspectorAsignadoId(q.getInspectorAsignado() == null ? null : q.getInspectorAsignado().getId())
+                .inspectorAsignadoNombre(q.getInspectorAsignado() == null ? null : q.getInspectorAsignado().getNombre())
+                .inspectorAsignadoZona(q.getInspectorAsignado() == null ? null :
+                    (q.getInspectorAsignado().getZona() == null ? null : q.getInspectorAsignado().getZona().name()))
+                .asignadoPorId(q.getAsignadoPor() == null ? null : q.getAsignadoPor().getId())
+                .asignadoPorNombre(q.getAsignadoPor() == null ? null : q.getAsignadoPor().getNombre())
                 .comunaId(q.getComuna() == null ? null : q.getComuna().getId())
                 .comunaNombre(q.getComuna() == null ? null : q.getComuna().getNombre())
                 .barrio(q.getBarrio())

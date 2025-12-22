@@ -1,10 +1,8 @@
 package com.neiva.querillas.domain.service;
 
 import com.neiva.querillas.domain.entity.Comuna;
-import com.neiva.querillas.domain.entity.Inspeccion;
 import com.neiva.querillas.domain.entity.Tema;
 import com.neiva.querillas.domain.repo.ComunaRepository;
-import com.neiva.querillas.domain.repo.InspeccionRepository;
 import com.neiva.querillas.domain.repo.TemaRepository;
 import com.neiva.querillas.web.dto.CatalogoDTO;
 import com.neiva.querillas.web.dto.ItemSimpleDTO;
@@ -20,63 +18,8 @@ import org.springframework.transaction.annotation.Transactional;
 @Slf4j
 public class CatalogoService {
 
-    private final InspeccionRepository inspeccionRepository;
     private final TemaRepository temaRepository;
     private final ComunaRepository comunaRepository;
-
-    // ==================== INSPECCIONES ====================
-
-    /**
-     * Crear inspección
-     */
-    @PreAuthorize("hasAnyRole('DIRECTORA','ADMIN')")
-    @Transactional
-    public ItemSimpleDTO crearInspeccion(CatalogoDTO dto) {
-        log.info("Creando inspección - nombre: {}", dto.getNombre());
-
-        Inspeccion inspeccion = new Inspeccion();
-        inspeccion.setNombre(dto.getNombre());
-
-        inspeccion = inspeccionRepository.save(inspeccion);
-        log.info("Inspección creada con ID: {}", inspeccion.getId());
-
-        return new ItemSimpleDTO(inspeccion.getId(), inspeccion.getNombre());
-    }
-
-    /**
-     * Actualizar inspección
-     */
-    @PreAuthorize("hasAnyRole('DIRECTORA','ADMIN')")
-    @Transactional
-    public ItemSimpleDTO actualizarInspeccion(Long id, CatalogoDTO dto) {
-        log.info("Actualizando inspección ID: {}", id);
-
-        Inspeccion inspeccion = inspeccionRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Inspección no encontrada con ID: " + id));
-
-        inspeccion.setNombre(dto.getNombre());
-        inspeccion = inspeccionRepository.save(inspeccion);
-
-        log.info("Inspección {} actualizada", id);
-
-        return new ItemSimpleDTO(inspeccion.getId(), inspeccion.getNombre());
-    }
-
-    /**
-     * Eliminar inspección
-     */
-    @PreAuthorize("hasAnyRole('DIRECTORA','ADMIN')")
-    @Transactional
-    public void eliminarInspeccion(Long id) {
-        log.info("Eliminando inspección ID: {}", id);
-
-        if (!inspeccionRepository.existsById(id)) {
-            throw new EntityNotFoundException("Inspección no encontrada con ID: " + id);
-        }
-
-        inspeccionRepository.deleteById(id);
-        log.info("Inspección {} eliminada", id);
-    }
 
     // ==================== TEMAS ====================
 

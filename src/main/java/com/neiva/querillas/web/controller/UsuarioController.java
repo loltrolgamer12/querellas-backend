@@ -1,6 +1,7 @@
 package com.neiva.querillas.web.controller;
 
 import com.neiva.querillas.domain.model.RolUsuario;
+import com.neiva.querillas.domain.model.ZonaInspector;
 import com.neiva.querillas.domain.service.UsuarioService;
 import com.neiva.querillas.web.dto.*;
 import jakarta.validation.Valid;
@@ -9,6 +10,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/usuarios")
@@ -89,5 +92,17 @@ public class UsuarioController {
         log.info("DELETE /api/usuarios/{}", id);
         usuarioService.eliminar(id);
         return ResponseEntity.noContent().build();
+    }
+
+    /**
+     * GET /api/usuarios/inspectores?zona={NEIVA|CORREGIMIENTO}
+     * Listar solo inspectores activos (para dropdowns)
+     */
+    @GetMapping("/inspectores")
+    public ResponseEntity<List<UsuarioResponse>> listarInspectores(
+            @RequestParam(required = false) ZonaInspector zona) {
+        log.info("GET /api/usuarios/inspectores - zona: {}", zona);
+        List<UsuarioResponse> response = usuarioService.listarInspectores(zona);
+        return ResponseEntity.ok(response);
     }
 }
