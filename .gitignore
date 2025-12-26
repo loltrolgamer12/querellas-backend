@@ -1,0 +1,119 @@
+# ================================================================
+# GITIGNORE - Sistema Completo de Gestión de Querellas
+# ================================================================
+
+# ================================================================
+# BACKEND (Spring Boot / Maven)
+# ================================================================
+
+# Maven
+back/target/
+back/.mvn/
+back/mvnw
+back/mvnw.cmd
+
+# IDE
+back/.idea/
+back/.vscode/
+back/*.iml
+back/.classpath
+back/.project
+back/.settings/
+
+# Logs
+back/*.log
+back/logs/
+*.log
+
+# Backups
+*.bak
+*.backup
+*.old
+
+# ================================================================
+# FRONTEND (Next.js / Node)
+# ================================================================
+
+# Dependencies
+front/node_modules/
+front/.pnp
+front/.pnp.js
+
+# Production build
+front/.next/
+front/out/
+front/build/
+front/dist/
+
+# Testing
+front/coverage/
+
+# Environment variables
+front/.env
+front/.env.local
+front/.env.development.local
+front/.env.test.local
+front/.env.production.local
+
+# Debug
+front/npm-debug.log*
+front/yarn-debug.log*
+front/yarn-error.log*
+
+# IDE
+front/.idea/
+front/.vscode/
+front/*.swp
+front/*.swo
+
+# OS files
+front/.DS_Store
+front/Thumbs.db
+
+# ================================================================
+# DIRECTORIOS TEMPORALES Y DUPLICADOS
+# ================================================================
+
+# Directorios antiguos (ignorar)
+querellas-backend/
+Frontend/
+
+# ================================================================
+# DATABASE
+# ================================================================
+
+# Backups de base de datos
+*.sql.bak
+backup_*.sql
+
+# ================================================================
+# GENERAL
+# ================================================================
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Temporary files
+*.tmp
+*.temp
+nul
+
+# IDE general
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Logs generales
+*.log
+logs/
+
+# Claude workspace
+.claude/
+
+# Test results (mantener scripts pero no resultados)
+resultados-*.txt
+ejecucion-*.log

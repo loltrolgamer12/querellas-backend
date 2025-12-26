@@ -1,0 +1,210 @@
+import type {
+  User,
+  Theme,
+  Comuna,
+  Case,
+  CaseHistory,
+  Attachment,
+  Communication,
+  Notification,
+} from "./types"
+
+export const mockUsers: User[] = [
+  {
+    id: "1",
+    email: "inspector1@neiva.gov.co",
+    name: "Carlos Rodríguez",
+    role: "inspector",
+    status: "activo",
+    phone: "3001234567",
+    createdAt: "2025-01-01T08:00:00Z",
+  },
+  {
+    id: "2",
+    email: "inspector2@neiva.gov.co",
+    name: "María González",
+    role: "inspector",
+    status: "activo",
+    phone: "3007654321",
+    createdAt: "2025-01-01T08:00:00Z",
+  },
+  {
+    id: "3",
+    email: "directora@neiva.gov.co",
+    name: "Ana Martínez",
+    role: "director",
+    status: "activo",
+    phone: "3009876543",
+    createdAt: "2025-01-01T08:00:00Z",
+  },
+  {
+    id: "4",
+    email: "auxiliar@neiva.gov.co",
+    name: "Pedro Sánchez",
+    role: "auxiliar",
+    status: "activo",
+    phone: "3005432109",
+    createdAt: "2025-01-01T08:00:00Z",
+  },
+]
+
+export const mockThemes: Theme[] = [
+  { id: "1", name: "Urbanismo", status: "activo" },
+  { id: "2", name: "Espacio Público", status: "activo" },
+  { id: "3", name: "Actividad Económica", status: "activo" },
+  { id: "4", name: "Policía Urbana", status: "activo" },
+  { id: "5", name: "Control de Precios", status: "activo" },
+]
+
+export const mockComunas: Comuna[] = [
+  { id: "1", name: "Comuna 1" },
+  { id: "2", name: "Comuna 2" },
+  { id: "3", name: "Comuna 3" },
+  { id: "4", name: "Comuna 4" },
+  { id: "5", name: "Comuna 5" },
+  { id: "6", name: "Comuna 6" },
+]
+
+export const mockCases: Case[] = [
+  {
+    id: "1",
+    internalId: "Q-2025-000001",
+    alcaldiaId: "ALC-2025-001",
+    localId: "5U-00001",
+    type: "querella",
+    status: "en_tramite",
+    theme: "Urbanismo",
+    address: "Calle 10 #5-20, Neiva",
+    description: "Construcción sin licencia en predio urbano",
+    querellante: "Juan Pérez",
+    naturaleza: "persona",
+    assignedTo: "1",
+    createdAt: "2025-01-15T10:30:00Z",
+    updatedAt: "2025-01-20T14:00:00Z",
+    createdBy: "3",
+    priority: "alta",
+  },
+  {
+    id: "2",
+    internalId: "Q-2025-000002",
+    alcaldiaId: "ALC-2025-002",
+    localId: "6EP-00001",
+    type: "querella",
+    status: "verificacion",
+    theme: "Espacio Público",
+    address: "Carrera 5 #12-30, Neiva",
+    description: "Ocupación indebida de andén con mercancía",
+    querellante: "Anónimo",
+    naturaleza: "anonima",
+    assignedTo: "2",
+    createdAt: "2025-01-18T09:00:00Z",
+    updatedAt: "2025-01-18T09:00:00Z",
+    createdBy: "3",
+    priority: "media",
+  },
+  {
+    id: "3",
+    internalId: "D-2025-000001",
+    type: "despacho",
+    status: "radicado",
+    address: "Calle 8 #3-15, Neiva",
+    description: "Diligencia de secuestro ordenada por Juzgado Civil",
+    oficioNumber: "OF-2025-123",
+    autoridad: "Juzgado Civil del Circuito",
+    procesoTipo: "Secuestro",
+    assignedTo: "1",
+    createdAt: "2025-01-20T11:00:00Z",
+    updatedAt: "2025-01-20T11:00:00Z",
+    createdBy: "3",
+    priority: "alta",
+  },
+]
+
+export const mockCaseHistory: CaseHistory[] = [
+  {
+    id: "1",
+    caseId: "1",
+    userId: "3",
+    userName: "Ana Martínez",
+    action: "Caso creado",
+    timestamp: "2025-01-15T10:30:00Z",
+  },
+  {
+    id: "2",
+    caseId: "1",
+    userId: "3",
+    userName: "Ana Martínez",
+    action: "Asignado a inspección",
+    newValue: "5ª Inspección",
+    timestamp: "2025-01-15T10:35:00Z",
+  },
+  {
+    id: "3",
+    caseId: "1",
+    userId: "1",
+    userName: "Carlos Rodríguez",
+    action: "Cambio de estado",
+    previousValue: "recibida",
+    newValue: "en_tramite",
+    reason: "Iniciando proceso de verificación en campo",
+    timestamp: "2025-01-20T14:00:00Z",
+  },
+]
+
+export const mockAttachments: Attachment[] = [
+  {
+    id: "1",
+    caseId: "1",
+    fileName: "foto_construccion.jpg",
+    fileType: "image/jpeg",
+    fileSize: 2048576,
+    uploadedBy: "1",
+    uploadedAt: "2025-01-15T11:00:00Z",
+    url: "/placeholder.svg?height=400&width=600",
+  },
+  {
+    id: "2",
+    caseId: "1",
+    fileName: "acta_visita.pdf",
+    fileType: "application/pdf",
+    fileSize: 512000,
+    uploadedBy: "1",
+    uploadedAt: "2025-01-18T15:30:00Z",
+    url: "#",
+  },
+]
+
+export const mockCommunications: Communication[] = [
+  {
+    id: "1",
+    caseId: "1",
+    type: "audiencia",
+    date: "2025-01-25T10:00:00Z",
+    responsible: "Carlos Rodríguez",
+    observations: "Audiencia de conciliación programada",
+    createdAt: "2025-01-20T16:00:00Z",
+  },
+]
+
+export const mockNotifications: Notification[] = [
+  {
+    id: "1",
+    userId: "1",
+    title: "Nuevo caso asignado",
+    message: "Se te ha asignado el caso Q-2025-000001",
+    type: "asignacion",
+    caseId: "1",
+    read: false,
+    createdAt: "2025-01-15T10:35:00Z",
+  },
+  {
+    id: "2",
+    userId: "2",
+    title: "Nuevo caso asignado",
+    message: "Se te ha asignado el caso Q-2025-000002",
+    type: "asignacion",
+    caseId: "2",
+    read: true,
+    createdAt: "2025-01-18T09:05:00Z",
+  },
+]

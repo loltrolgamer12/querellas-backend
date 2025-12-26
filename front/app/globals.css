@@ -1,0 +1,149 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+:root {
+  /* Colores institucionales de la Policía Nacional de Colombia */
+  --police-green: 142 50% 20%;
+  --police-green-dark: 142 50% 15%;
+  --police-yellow: 45 98% 54%;
+  --police-blue: 210 100% 25%;
+  --police-blue-light: 210 100% 35%;
+
+  --background: 0 0% 100%;
+  --foreground: 142 50% 15%;
+  --card: 0 0% 100%;
+  --card-foreground: 142 50% 15%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 142 50% 15%;
+  --primary: 142 50% 20%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 45 98% 54%;
+  --secondary-foreground: 142 50% 15%;
+  --muted: 142 20% 96%;
+  --muted-foreground: 142 20% 40%;
+  --accent: 45 98% 54%;
+  --accent-foreground: 142 50% 15%;
+  --destructive: 0 84% 60%;
+  --destructive-foreground: 0 0% 100%;
+  --border: 142 20% 88%;
+  --input: 142 20% 88%;
+  --ring: 142 50% 20%;
+  --chart-1: 142 50% 35%;
+  --chart-2: 45 98% 54%;
+  --chart-3: 210 100% 35%;
+  --chart-4: 142 30% 50%;
+  --chart-5: 45 80% 65%;
+  --radius: 0.5rem;
+  --sidebar: oklch(0.985 0 0);
+  --sidebar-foreground: oklch(0.145 0 0);
+  --sidebar-primary: oklch(0.205 0 0);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.97 0 0);
+  --sidebar-accent-foreground: oklch(0.205 0 0);
+  --sidebar-border: oklch(0.922 0 0);
+  --sidebar-ring: oklch(0.708 0 0);
+}
+
+.dark {
+  --background: 142 50% 8%;
+  --foreground: 0 0% 98%;
+  --card: 142 50% 10%;
+  --card-foreground: 0 0% 98%;
+  --popover: 142 50% 10%;
+  --popover-foreground: 0 0% 98%;
+  --primary: 142 50% 25%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 45 98% 54%;
+  --secondary-foreground: 142 50% 10%;
+  --muted: 142 30% 18%;
+  --muted-foreground: 142 20% 70%;
+  --accent: 45 98% 54%;
+  --accent-foreground: 142 50% 10%;
+  --destructive: 0 62% 50%;
+  --destructive-foreground: 0 0% 100%;
+  --border: 142 30% 18%;
+  --input: 142 30% 18%;
+  --ring: 142 50% 25%;
+  --chart-1: 142 50% 45%;
+  --chart-2: 45 98% 60%;
+  --chart-3: 210 100% 50%;
+  --chart-4: 142 35% 55%;
+  --chart-5: 45 85% 70%;
+  --sidebar: oklch(0.205 0 0);
+  --sidebar-foreground: oklch(0.985 0 0);
+  --sidebar-primary: oklch(0.488 0.243 264.376);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.269 0 0);
+  --sidebar-accent-foreground: oklch(0.985 0 0);
+  --sidebar-border: oklch(0.269 0 0);
+  --sidebar-ring: oklch(0.439 0 0);
+}
+
+@theme inline {
+  /* optional: --font-sans, --font-serif, --font-mono if they are applied in the layout.tsx */
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+/* Estilos personalizados para el tema de Policía */
+.police-gradient {
+  background: linear-gradient(135deg, hsl(var(--police-green)) 0%, hsl(var(--police-green-dark)) 100%);
+}
+
+.police-header {
+  background: linear-gradient(90deg, hsl(var(--police-green-dark)) 0%, hsl(var(--police-green)) 100%);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.police-accent {
+  color: hsl(var(--police-yellow));
+}
+
+.police-border {
+  border-color: hsl(var(--police-green));
+}
