@@ -1,0 +1,37 @@
+# Configuración Fly.io para Frontend - Next.js
+
+app = "querellas-frontend"
+primary_region = "mia" # Miami - más cercano a Colombia
+
+# Configuración de build
+[build]
+  dockerfile = "Dockerfile"
+
+# Variables de entorno
+[env]
+  NODE_ENV = "production"
+  PORT = "3000"
+
+# Configuración HTTP
+[http_service]
+  internal_port = 3000
+  force_https = true
+  auto_stop_machines = "suspend"
+  auto_start_machines = true
+  min_machines_running = 1
+  processes = ["app"]
+
+  # Health checks
+  [http_service.checks]
+    [http_service.checks.alive]
+      type = "tcp"
+      interval = "30s"
+      timeout = "5s"
+      grace_period = "30s"
+
+# Configuración de máquinas
+[[vm]]
+  size = "shared-cpu-1x"
+  memory = "512mb"
+  cpu_kind = "shared"
+  cpus = 1

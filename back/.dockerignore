@@ -1,0 +1,30 @@
+# Ignorar archivos innecesarios en el build de Docker
+
+# Maven
+target/
+!target/*.jar
+
+# IDE
+.idea/
+.vscode/
+*.iml
+.classpath
+.project
+.settings/
+
+# Logs
+*.log
+logs/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Git
+.git/
+.gitignore
+
+# Otros
+*.md
+!README.md
+server.log

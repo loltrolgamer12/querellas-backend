@@ -1,0 +1,45 @@
+# Configuración Fly.io para Backend - Spring Boot
+
+app = "querellas-backend"
+primary_region = "mia" # Miami - más cercano a Colombia
+
+# Configuración de build
+[build]
+  dockerfile = "Dockerfile"
+
+# Variables de entorno
+[env]
+  SERVER_PORT = "8081"
+  SPRING_PROFILES_ACTIVE = "prod"
+  JAVA_OPTS = "-Xmx512m -Xms256m -XX:+UseG1GC"
+
+# Configuración HTTP
+[http_service]
+  internal_port = 8081
+  force_https = true
+  auto_stop_machines = "suspend"
+  auto_start_machines = true
+  min_machines_running = 1
+  processes = ["app"]
+
+  # Health checks
+  [http_service.checks]
+    [http_service.checks.alive]
+      type = "http"
+      interval = "30s"
+      timeout = "5s"
+      grace_period = "30s"
+      method = "GET"
+      path = "/actuator/health"
+
+# Configuración de máquinas
+[[vm]]
+  size = "shared-cpu-1x"
+  memory = "1gb"
+  cpu_kind = "shared"
+  cpus = 1
+
+# Métricas
+[[metrics]]
+  port = 8081
+  path = "/actuator/prometheus"
